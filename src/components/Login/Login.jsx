@@ -1,14 +1,25 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import Chat from "../Chat/Chat";
-import { FormGroup, Form, Label, Input, Button, FormText } from "reactstrap";
+import {
+  FormGroup,
+  Form,
+  Label,
+  Input,
+  Button,
+  FormText,
+  Alert,
+} from "reactstrap";
+import Data from "../../services/data";
 
 export default function Login() {
   const [token, setToken] = useAuth();
   const [validUsername, setValidUsername] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
+  const [alert, setAlert] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [page, setPage] = useState("login");
 
   useEffect(() => {
     if (
@@ -40,11 +51,34 @@ export default function Login() {
     return <Chat />;
   }
 
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    if (page == "signup") {
+      let response = await Data.SignUpFetch(username, password);
+      if (response.ok) {
+        setToken(response.token);
+        setAlert(false);
+      } else {
+        setAlert("Username already exists or password incorrect");
+      }
+    } else {
+      let response = await Data.LoginFetch(username, password);
+      if (response.ok) {
+        setToken(response.token);
+        setAlert(false);
+      } else {
+        setAlert("Username already exists or password incorrect");
+      }
+    }
+  }
+
   return (
     <section className="vh-100 d-flex justify-content-center flex-column align-items-center">
-      <h1>Login</h1>
+      <h1>{page == "login" ? "Login" : "Sign Up"}</h1>
 
-      <Form className="mt-2 w-50">
+      <Form onSubmit={(e) => handleSubmit(e)} className="mt-2 w-50">
+        {alert && <Alert color="danger">{alert}</Alert>}
         <FormGroup>
           <Label for="username"></Label>
           <Input
@@ -84,7 +118,15 @@ export default function Login() {
           className="mt-3 w-100"
           size="lg"
         >
-          Login
+          {page == "login" ? "Login" : "Sign Up"}
+        </Button>
+        <Button
+          onClick={(e) => setPage(page == "login" ? "signup" : "login")}
+          className="mt-3 w-100"
+          size="lg"
+          type="button"
+        >
+          {page != "login" ? "Login" : "Sign Up"}
         </Button>
       </Form>
     </section>

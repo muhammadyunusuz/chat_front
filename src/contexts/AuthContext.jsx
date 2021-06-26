@@ -1,36 +1,31 @@
-import React, { useEffect } from 'react'
+import React, { useEffect } from "react";
 
-const AuthContext = React.createContext()
+const AuthContext = React.createContext();
 
-function AuthRouter ({ children }) {
+function AuthRouter({ children }) {
+  const [token, setToken] = React.useState(
+    window.localStorage.getItem("token")
+  );
 
-    const [token, setToken] = React.useState(window.localStorage.getItem("token"))
+  useEffect(() => {
+    if (token) {
+      window.localStorage.setItem("token", token);
+    } else {
+      window.localStorage.removeItem("token");
+    }
+  }, [token]);
 
-    useEffect(() => {
-        if(token) {
-            window.localStorage.setItem("token", token)
-        } else {
-            window.localStorage.removeItem("token")
-        }
-    }, [token])
-
-    return (
-        <AuthContext.Provider value={{ token, setToken }}>
-            <AuthContext.Consumer>
-                { () => children }
-            </AuthContext.Consumer>
-        </AuthContext.Provider>
-    )
+  return (
+    <AuthContext.Provider value={{ token, setToken }}>
+      <AuthContext.Consumer>{() => children}</AuthContext.Consumer>
+    </AuthContext.Provider>
+  );
 }
 
-function useAuth () {
+function useAuth() {
+  const { token, setToken } = React.useContext(AuthContext);
 
-    const { token, setToken } = React.useContext(AuthContext)
-
-    return [token, setToken]
-
+  return [token, setToken];
 }
 
-export {
-    AuthRouter, AuthContext, useAuth
-}
+export { AuthRouter, AuthContext, useAuth };
